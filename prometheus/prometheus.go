@@ -26,8 +26,8 @@ type input struct {
 	SessionKey    string        `xml:"session_key"`
 	CheckpointDir string        `xml:"checkpoint_dir"`
 	Configuration configuration `xml:"configuration"`
-	Username      string `xml:"username"`
-	Password      string `xml:"password"`
+	Username      string        `xml:"username"`
+	Password      string        `xml:"password"`
 }
 
 type configuration struct {
