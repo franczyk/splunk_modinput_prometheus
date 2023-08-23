@@ -26,6 +26,8 @@ type input struct {
 	SessionKey    string        `xml:"session_key"`
 	CheckpointDir string        `xml:"checkpoint_dir"`
 	Configuration configuration `xml:"configuration"`
+	Username string `xml:"username"`
+	Password string `xml:"password"`
 }
 
 type configuration struct {
@@ -56,6 +58,8 @@ type inputConfig struct {
 	Sourcetype         string
 	Host               string
 	HttpTimeout        int64
+	Username string
+	Password string
 }
 
 var (
@@ -226,6 +230,12 @@ func config() inputConfig {
 			if p.Name == "httpTimeout" {
 				inputConfig.HttpTimeout, _ = strconv.ParseInt(p.Value, 10, 64)
 			}
+			if p.Name == "username" {
+				inputConfig.Username = p.Value
+			}
+			if p.Name == "password" {
+				inputConfig.Password = p.Value
+			}
 		}
 	}
 
@@ -252,6 +262,9 @@ func run() {
 		log.Fatal("Request error", err)
 	}
 
+	if inputConfig.Username != "" && inputConfig.Password != "" {
+		req.SetBasicAuth(inputConfig.Username, inputConfig.Password)
+	}
   req.Header.Add("Accept", "application/openmetrics-text;version=1.0.0,application/openmetrics-text;version=0.0.1;q=0.75,text/plain;version=0.0.4;q=0.5,*/*;q=0.1")
   req.Header.Add("Accept-Encoding", "gzip")
   req.TransferEncoding = []string{"identity"}
@@ -287,7 +300,7 @@ func run() {
 
 	// Need to parse metrics out of body individually to convert from scientific to decimal etc. before handing to Splunk
 	contentType := resp.Header.Get("Content-Type")
-	p, err := textparse.New(body, contentType)
+	p, err := textparse.New(body, contentType, true)
   
   if err != nil {
 		log.Fatal(err)
